@@ -216,4 +216,44 @@ export const isAuthenticated = async (req, res) => {
     }
   };
 
+  export const resetPassword = async (req, res) => {
+    const { email, otp, newPassword } = req.body;
   
+    if (!email || !otp || !newPassword) {
+      return res.json({
+        success: false,
+        message: "Email, OTP, and New Password are required",
+      });
+    }
+  
+    try {
+      const user = await userModel.findOne({ email });
+  
+      if (!user) {
+        return res.json({ success: false, message: "User Not Found" });
+      }
+  
+      if (user.resetOtp === "" || user.resetOtp !== otp) {
+        return res.json({ success: false, message: "Invalid OTP" });
+      }
+  
+      if (user.resetOtpExpireAt < Date.now()) {
+        return res.json({ success: false, message: "OTP Expired" });
+      }
+  
+      const hashedPassword = await bycrypt.hash(newPassword, 10);
+  
+      user.password = hashedPassword;
+      user.resetOtp = "";
+      user.resetOtpExpireAt = 0;
+  
+      await user.save();
+  
+      return res.json({
+        success: true,
+        message: "Password has been reset successfully",
+      });
+    } catch (error) {
+      return res.json({ success: false, message: error.message });
+    }
+  };

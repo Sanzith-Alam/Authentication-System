@@ -14,7 +14,7 @@ connectDB();
 
 const allowedOrigins = [
     "http://localhost:5173",
-    
+    "https://authentication-system-alpha.vercel.app/",
   ];
   
 
